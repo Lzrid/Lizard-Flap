@@ -131,6 +131,9 @@ export class MenuScene implements Scene {
     ctx.font = "16px system-ui, sans-serif";
     ctx.fillText("tap / space to flap", VIRTUAL_WIDTH / 2, 150);
 
+    ctx.font = "bold 14px system-ui, sans-serif";
+    ctx.fillText("TKWoK Championship", VIRTUAL_WIDTH / 2, 178);
+
     if (this.ctxMgr.score.high > 0) {
       ctx.fillText(`best: ${this.ctxMgr.score.high}`, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT - 130);
     }
