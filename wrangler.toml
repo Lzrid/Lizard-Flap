@@ -1,0 +1,13 @@
+name = "lizardflap"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "dist"
+
+# Bind the D1 database created with:
+#   wrangler d1 create lizard-flap-leaderboard
+# then paste the printed database_id below and run:
+#   wrangler d1 migrations apply lizard-flap-leaderboard --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "lizard-flap-leaderboard"
+database_id = "REPLACE_WITH_D1_ID"
+migrations_dir = "migrations"

@@ -16,6 +16,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run format` — Prettier write on `src/**/*.{ts,css,html}`.
 - `npm test` — Vitest in watch mode. Run a single file with `npx vitest run src/game/Clock.test.ts` or filter by name with `npx vitest -t "fixed-dt"`.
 
+Cloudflare Pages deploy (one-time):
+
+1. `wrangler d1 create lizard-flap-leaderboard` → paste the printed `database_id` into `wrangler.toml`.
+2. `wrangler d1 migrations apply lizard-flap-leaderboard --remote` to create the `players` table.
+3. Push to the connected branch — Pages auto-runs `npm run build`, serves `dist/`, and routes `functions/api/*` to a Worker with `env.DB` bound.
+
 `?debug` in the URL (or any `import.meta.env.DEV` build) enables `DebugOverlay` (FPS + clicks-per-second HUD).
 
 ## Architecture
@@ -55,7 +61,12 @@ Local (browser, in `config.ts`):
 
 Both wrap reads/writes in try/catch so privacy mode / quota errors don't crash the game.
 
-Global (server, `server/index.mjs`): the leaderboard is backed by SQLite via `node:sqlite` (no native build step). DB file lives at `server/leaderboard.db` (override with `LB_DB_PATH`). The schema is a single `players` table whose primary key is `name TEXT COLLATE NOCASE`, so name uniqueness is enforced atomically by the DB itself — there's no second-check race. The API surface:
+Global, two interchangeable backends with the **same schema and same API contract**:
+
+- **Local dev** — `server/index.mjs` (Express + `node:sqlite`, file at `server/leaderboard.db`, override with `LB_DB_PATH`). Started by `npm run dev`; Vite proxies `/api/*` to it on `:3001`.
+- **Production on Cloudflare Pages** — `functions/api/*.js` (Pages Functions, JS, no bundler config). Each file maps to a `/api/...` route automatically. The D1 binding is `env.DB`, configured in `wrangler.toml`. Schema migration in `migrations/0001_init.sql` is applied with `wrangler d1 migrations apply lizard-flap-leaderboard --remote`. Helpers shared between Pages Functions live in `functions/_lib/`.
+
+Both back the same single `players` table whose primary key is `name TEXT COLLATE NOCASE`, so name uniqueness is enforced atomically by the DB itself — there's no second-check race. The API surface:
 
 - `GET  /api/leaderboard` — sorted entries with `score > 0 OR flies > 0`.
 - `POST /api/players { name }` — `INSERT OR IGNORE`. Returns `201` on first claim, `409 name_taken` if anyone (case-insensitively) already owns it, `400 invalid_name` if format is wrong.
