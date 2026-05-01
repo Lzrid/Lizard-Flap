@@ -6,6 +6,7 @@ import { Hawks } from "../entities/Hawks";
 import { KiwiFlock } from "../entities/KiwiFlock";
 import { Lizard } from "../entities/Lizard";
 import { PipePool } from "../entities/PipePool";
+import type { Button } from "../systems/Buttons";
 import { drawIconButton } from "../systems/Buttons";
 import { circleVsCircle, circleVsRect } from "../systems/Collision";
 import { difficultyFor } from "../systems/Difficulty";
@@ -13,6 +14,7 @@ import { Particles } from "../systems/Particles";
 import { fillRoundedRect } from "../../utils/draw";
 import { GameOverScene } from "./GameOverScene";
 import { drawMuteIcon } from "./MenuScene";
+import { ModScene } from "./ModScene";
 import { PauseScene } from "./PauseScene";
 import type { GameContext, Scene } from "./Scene";
 
@@ -42,7 +44,8 @@ export class PlayScene implements Scene {
 
   enter(): void {
     this.ctxMgr.audio.music.setMode("jazz");
-    this.ctxMgr.buttons.set([
+
+    const buttons: Button[] = [
       {
         x: 8,
         y: 8,
@@ -74,7 +77,34 @@ export class PlayScene implements Scene {
           this.ctxMgr.audio.setMuted(muted);
         },
       },
-    ]);
+    ];
+
+    if (this.ctxMgr.mods.isAdmin(this.ctxMgr.settings.playerName)) {
+      buttons.push({
+        x: 8,
+        y: 44,
+        w: 28,
+        h: 28,
+        draw: (ctx, hit) =>
+          drawIconButton(
+            ctx,
+            { x: 8, y: 44, w: 28, h: 28, draw: () => undefined, onPress: () => undefined },
+            hit,
+            drawModIcon,
+          ),
+        onPress: () => this.openModMenu(),
+      });
+    }
+
+    this.ctxMgr.buttons.set(buttons);
+  }
+
+  private openModMenu(): void {
+    if (this.ctxMgr.mods.ensureUnlocked()) {
+      // Pass `this` so ModScene's back button returns to this PlayScene
+      // instance — its lizard position, score, and pipe state are preserved.
+      this.ctxMgr.goTo(new ModScene(this.ctxMgr, this));
+    }
   }
 
   exit(): void {
@@ -279,4 +309,13 @@ function drawPauseIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): v
   ctx.fillStyle = "#fff";
   ctx.fillRect(cx - 5, cy - 6, 3, 12);
   ctx.fillRect(cx + 2, cy - 6, 3, 12);
+}
+
+function drawModIcon(ctx: CanvasRenderingContext2D, cx: number, cy: number): void {
+  ctx.fillStyle = "#fff";
+  ctx.font = "bold 14px ui-monospace, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("M", cx, cy + 1);
+  ctx.textBaseline = "alphabetic";
 }

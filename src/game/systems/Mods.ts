@@ -24,6 +24,16 @@ export class Mods {
     this.unlocked = false;
   }
 
+  /** Returns true if already unlocked or if the user just entered the right passcode. */
+  ensureUnlocked(): boolean {
+    if (this.unlocked) return true;
+    const code = window.prompt("Enter passcode:") ?? "";
+    if (code === "") return false;
+    if (this.tryUnlock(code)) return true;
+    window.alert("Incorrect passcode.");
+    return false;
+  }
+
   /** Returns and clears the queued starting score so it only applies to the next run. */
   consumeStartingScore(): number {
     const v = this.startingScore;

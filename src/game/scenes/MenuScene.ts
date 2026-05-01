@@ -97,16 +97,8 @@ export class MenuScene implements Scene {
   }
 
   private openModMenu(): void {
-    if (this.ctxMgr.mods.unlocked) {
+    if (this.ctxMgr.mods.ensureUnlocked()) {
       this.ctxMgr.goTo(new ModScene(this.ctxMgr));
-      return;
-    }
-    const code = window.prompt("Enter passcode:") ?? "";
-    if (code === "") return;
-    if (this.ctxMgr.mods.tryUnlock(code)) {
-      this.ctxMgr.goTo(new ModScene(this.ctxMgr));
-    } else {
-      window.alert("Incorrect passcode.");
     }
   }
 

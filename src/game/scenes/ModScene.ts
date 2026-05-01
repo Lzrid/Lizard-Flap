@@ -12,7 +12,10 @@ const ROW_GAP = 8;
 const FIRST_ROW_Y = 110;
 
 export class ModScene implements Scene {
-  constructor(private readonly ctxMgr: GameContext) {}
+  constructor(
+    private readonly ctxMgr: GameContext,
+    private readonly returnTo?: Scene,
+  ) {}
 
   enter(): void {
     this.rebuild();
@@ -23,7 +26,11 @@ export class ModScene implements Scene {
   }
 
   onFlap(): void {
-    this.ctxMgr.goTo(new MenuScene(this.ctxMgr));
+    this.goBack();
+  }
+
+  private goBack(): void {
+    this.ctxMgr.goTo(this.returnTo ?? new MenuScene(this.ctxMgr));
   }
 
   update(_dt: number): void {
@@ -95,7 +102,7 @@ export class ModScene implements Scene {
           hit,
           drawBackIcon,
         ),
-      onPress: () => this.ctxMgr.goTo(new MenuScene(this.ctxMgr)),
+      onPress: () => this.goBack(),
     });
 
     this.ctxMgr.buttons.set(buttons);
