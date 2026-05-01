@@ -90,7 +90,7 @@ function isAdminAuthorized(body) {
 
 app.post("/api/admin/reset-leaderboard", (req, res) => {
   if (!isAdminAuthorized(req.body)) return res.status(403).json({ error: "forbidden" });
-  db.prepare("DELETE FROM players").run();
+  db.prepare("UPDATE players SET score = 0, flies = 0, ts = ?").run(Date.now());
   res.json({ ok: true });
 });
 
@@ -99,9 +99,11 @@ app.post("/api/admin/reset-player", (req, res) => {
   const target = sanitizeName(req.body?.target);
   if (!target) return res.status(400).json({ error: "invalid_target" });
   const result = db
-    .prepare("DELETE FROM players WHERE name = ? COLLATE NOCASE")
-    .run(target);
-  res.json({ ok: true, deleted: result.changes ?? 0 });
+    .prepare(
+      "UPDATE players SET score = 0, flies = 0, ts = ? WHERE name = ? COLLATE NOCASE",
+    )
+    .run(Date.now(), target);
+  res.json({ ok: true, reset: result.changes ?? 0 });
 });
 
 app.post("/api/runs", (req, res) => {
