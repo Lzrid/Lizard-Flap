@@ -1,6 +1,6 @@
-// Minimal cache-first service worker. The build hash in asset filenames means
-// stale entries get garbage-collected naturally on the next deploy.
-const CACHE = "lizard-flap-v1";
+// Bumped from v1 -> v2 so old caches (which contained the pre-D1, localStorage
+// leaderboard bundle) get purged on activate.
+const CACHE = "lizard-flap-v2";
 const CORE = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg"];
 
 self.addEventListener("install", (event) => {
@@ -20,6 +20,34 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
+
+  const url = new URL(req.url);
+
+  // Never cache or intercept the leaderboard API — must be live across devices.
+  if (url.pathname.startsWith("/api/")) return;
+
+  // Navigation / HTML: network-first so a fresh deploy is picked up immediately.
+  const isHTML =
+    req.mode === "navigate" ||
+    (req.headers.get("accept") ?? "").includes("text/html");
+  if (isHTML) {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => undefined);
+          return res;
+        })
+        .catch(() =>
+          caches.match(req).then(
+            (hit) => hit ?? caches.match("./index.html").then((r) => r ?? Response.error()),
+          ),
+        ),
+    );
+    return;
+  }
+
+  // Hashed JS/CSS assets and icons: cache-first (filename hash invalidates).
   event.respondWith(
     caches.match(req).then((hit) => {
       if (hit) return hit;
