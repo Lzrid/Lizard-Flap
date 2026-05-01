@@ -64,7 +64,7 @@ Both wrap reads/writes in try/catch so privacy mode / quota errors don't crash t
 Global, two interchangeable backends with the **same schema and same API contract**:
 
 - **Local dev** — `server/index.mjs` (Express + `node:sqlite`, file at `server/leaderboard.db`, override with `LB_DB_PATH`). Started by `npm run dev`; Vite proxies `/api/*` to it on `:3001`.
-- **Production on Cloudflare Workers + Static Assets** — `worker/index.js` is the Worker entry. It dispatches `/api/*` to the handlers under `functions/api/*.js` (still written in the Pages Functions handler shape so the same files are reusable from either deploy model) and falls through to the static `[assets]` binding for everything else. `not_found_handling = "single-page-application"` in `wrangler.toml` covers SPA fallback. The D1 binding is `env.DB`; helpers shared between handlers live in `functions/_lib/`. Schema migration in `migrations/0001_init.sql` is applied with `wrangler d1 migrations apply lizard-flap-leaderboard --remote`.
+- **Production on Cloudflare Pages** — `functions/api/*.js` (Pages Functions). Each file maps to a `/api/...` route automatically; no Worker entry needed. The D1 binding is `env.DB`, declared in `wrangler.toml` (`pages_build_output_dir = "dist"` puts wrangler in Pages mode). Helpers shared between handlers live in `functions/_lib/`. Schema migration in `migrations/0001_init.sql` is applied with `wrangler d1 migrations apply lizard-flap-leaderboard --remote`.
 
 Both back the same single `players` table whose primary key is `name TEXT COLLATE NOCASE`, so name uniqueness is enforced atomically by the DB itself — there's no second-check race. The API surface:
 

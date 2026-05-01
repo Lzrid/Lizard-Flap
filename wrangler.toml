@@ -1,14 +1,6 @@
 name = "lizardflap"
-main = "worker/index.js"
 compatibility_date = "2025-01-01"
-
-# Static frontend produced by `npm run build`. Cloudflare serves these
-# first; the Worker only runs for requests that don't match an asset
-# (e.g. /api/*).
-[assets]
-directory = "./dist"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
+pages_build_output_dir = "dist"
 
 # D1 database created with:
 #   wrangler d1 create lizard-flap-leaderboard
