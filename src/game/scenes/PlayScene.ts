@@ -32,7 +32,11 @@ export class PlayScene implements Scene {
 
   constructor(private readonly ctxMgr: GameContext) {
     this.ctxMgr.score.reset();
-    const initial = difficultyFor(0);
+    const startScore = this.ctxMgr.mods.consumeStartingScore();
+    const startFlies = this.ctxMgr.mods.consumeStartingFlies();
+    if (startScore > 0) this.ctxMgr.score.current = startScore;
+    if (startFlies > 0) this.ctxMgr.score.flies = startFlies;
+    const initial = difficultyFor(this.ctxMgr.score.current);
     this.pipes = new PipePool({ scrollSpeed: initial.scrollSpeed, pipeGap: initial.pipeGap });
   }
 
@@ -136,14 +140,24 @@ export class PlayScene implements Scene {
 
     const groundY = this.ground.topY();
     const liz = { x: this.lizard.x, y: this.lizard.y, r: this.lizard.hitboxRadius() };
+    const noclip = this.ctxMgr.mods.noclip;
 
-    if (this.lizard.y + liz.r >= groundY || this.lizard.y - liz.r <= 0) {
+    if (noclip) {
+      if (this.lizard.y + liz.r > groundY) {
+        this.lizard.y = groundY - liz.r;
+        if (this.lizard.vy > 0) this.lizard.vy = 0;
+      }
+      if (this.lizard.y - liz.r < 0) {
+        this.lizard.y = liz.r;
+        if (this.lizard.vy < 0) this.lizard.vy = 0;
+      }
+    } else if (this.lizard.y + liz.r >= groundY || this.lizard.y - liz.r <= 0) {
       this.die();
       return;
     }
 
     for (const p of this.pipes.active()) {
-      if (circleVsRect(liz, p.topRect()) || circleVsRect(liz, p.bottomRect(groundY))) {
+      if (!noclip && (circleVsRect(liz, p.topRect()) || circleVsRect(liz, p.bottomRect(groundY)))) {
         this.die();
         return;
       }
@@ -164,7 +178,7 @@ export class PlayScene implements Scene {
     }
 
     for (const h of this.hawks.active()) {
-      if (circleVsCircle(liz, h)) {
+      if (!noclip && circleVsCircle(liz, h)) {
         this.die();
         return;
       }

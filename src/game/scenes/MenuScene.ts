@@ -4,13 +4,16 @@ import { Background, DAY_PALETTE } from "../entities/Background";
 import { Ground } from "../entities/Ground";
 import { KiwiFlock } from "../entities/KiwiFlock";
 import { Lizard } from "../entities/Lizard";
+import type { Button } from "../systems/Buttons";
 import { drawIconButton } from "../systems/Buttons";
 import { LeaderboardScene } from "./LeaderboardScene";
+import { ModScene } from "./ModScene";
 import { PlayScene } from "./PlayScene";
 import type { GameContext, Scene } from "./Scene";
 
 const LEADERBOARD_BTN = { x: VIRTUAL_WIDTH / 2 - 80, y: 360, w: 160, h: 40 };
 const NAME_BTN = { x: VIRTUAL_WIDTH / 2 - 80, y: 410, w: 160, h: 32 };
+const MOD_BTN = { x: VIRTUAL_WIDTH / 2 - 80, y: 450, w: 160, h: 32 };
 
 export class MenuScene implements Scene {
   private readonly bg = new Background();
@@ -25,7 +28,8 @@ export class MenuScene implements Scene {
   enter(): void {
     this.ctxMgr.audio.music.setMode("jazz");
     void this.ctxMgr.leaderboard.refresh();
-    this.ctxMgr.buttons.set([
+
+    const buttons: Button[] = [
       {
         ...LEADERBOARD_BTN,
         draw: (ctx, hit) => {
@@ -64,7 +68,17 @@ export class MenuScene implements Scene {
           this.ctxMgr.audio.setMuted(muted);
         },
       },
-    ]);
+    ];
+
+    if (this.ctxMgr.mods.isAdmin(this.ctxMgr.settings.playerName)) {
+      buttons.push({
+        ...MOD_BTN,
+        draw: (ctx, hit) => drawWideButton(ctx, MOD_BTN, hit, "Mod menu", true),
+        onPress: () => this.ctxMgr.goTo(new ModScene(this.ctxMgr)),
+      });
+    }
+
+    this.ctxMgr.buttons.set(buttons);
   }
 
   exit(): void {

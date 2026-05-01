@@ -11,6 +11,7 @@ import { ButtonLayer } from "./systems/Buttons";
 import { Effects } from "./systems/Effects";
 import { Input } from "./systems/Input";
 import { Leaderboard } from "./systems/Leaderboard";
+import { Mods } from "./systems/Mods";
 import { Score } from "./systems/Score";
 import { Settings } from "./systems/Settings";
 
@@ -26,6 +27,7 @@ export class Game {
   private readonly effects = new Effects();
   private readonly buttons = new ButtonLayer();
   private readonly leaderboard = new Leaderboard();
+  private readonly mods = new Mods();
   private rafId = 0;
   private lastTime = 0;
   private running = false;
@@ -45,6 +47,7 @@ export class Game {
       buttons: this.buttons,
       leaderboard: this.leaderboard,
       renderer: this.renderer,
+      mods: this.mods,
       promptForName: () => this.promptForName(),
     };
 

@@ -1,5 +1,6 @@
 import type { Audio } from "../systems/Audio";
 import type { Effects } from "../systems/Effects";
+import type { Mods } from "../systems/Mods";
 import type { Score } from "../systems/Score";
 import type { Settings } from "../systems/Settings";
 import type { ButtonLayer } from "../systems/Buttons";
@@ -15,6 +16,7 @@ export interface GameContext {
   buttons: ButtonLayer;
   leaderboard: Leaderboard;
   renderer: Renderer;
+  mods: Mods;
   /** Prompts the user for a name (uses native prompt for cross-platform input). Resolves true if a valid, unique name was set. */
   promptForName(): Promise<boolean>;
 }

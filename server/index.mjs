@@ -81,6 +81,29 @@ app.post("/api/players", (req, res) => {
   res.status(201).json({ name });
 });
 
+const DEFAULT_ADMIN = "Daniel Guzev";
+function isAdminAuthorized(body) {
+  const allowed = (process.env.ADMIN_NAME ?? DEFAULT_ADMIN).toLowerCase();
+  const claimed = typeof body?.name === "string" ? body.name.trim().toLowerCase() : "";
+  return claimed.length > 0 && claimed === allowed;
+}
+
+app.post("/api/admin/reset-leaderboard", (req, res) => {
+  if (!isAdminAuthorized(req.body)) return res.status(403).json({ error: "forbidden" });
+  db.prepare("DELETE FROM players").run();
+  res.json({ ok: true });
+});
+
+app.post("/api/admin/reset-player", (req, res) => {
+  if (!isAdminAuthorized(req.body)) return res.status(403).json({ error: "forbidden" });
+  const target = sanitizeName(req.body?.target);
+  if (!target) return res.status(400).json({ error: "invalid_target" });
+  const result = db
+    .prepare("DELETE FROM players WHERE name = ? COLLATE NOCASE")
+    .run(target);
+  res.json({ ok: true, deleted: result.changes ?? 0 });
+});
+
 app.post("/api/runs", (req, res) => {
   const name = sanitizeName(req.body?.name);
   const score = Math.max(0, Math.floor(Number(req.body?.score)) || 0);

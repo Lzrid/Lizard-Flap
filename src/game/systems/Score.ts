@@ -32,6 +32,11 @@ export class Score {
     this.flies = 0;
   }
 
+  resetHigh(): void {
+    this.high = 0;
+    this.save();
+  }
+
   increment(): void {
     this.current += 1;
   }

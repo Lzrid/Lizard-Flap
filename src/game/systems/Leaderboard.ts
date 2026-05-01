@@ -55,6 +55,36 @@ export class Leaderboard {
     }
   }
 
+  async resetLeaderboard(adminName: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/admin/reset-leaderboard`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: adminName }),
+      });
+      if (!res.ok) return false;
+      this.entries = [];
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async resetPlayer(adminName: string, targetName: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/admin/reset-player`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name: adminName, target: targetName }),
+      });
+      if (!res.ok) return false;
+      await this.refresh();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async submit(name: string, score: number, flies: number): Promise<{ rank: number | null }> {
     if (!name) return { rank: null };
     try {
