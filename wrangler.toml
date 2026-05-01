@@ -9,5 +9,5 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "lizard-flap-leaderboard"
-database_id = "REPLACE_WITH_D1_ID"
+database_id = "ea854f62-4f8d-4ac5-b789-3ebdd9c34b76"
 migrations_dir = "migrations"
