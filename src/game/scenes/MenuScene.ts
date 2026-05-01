@@ -74,7 +74,7 @@ export class MenuScene implements Scene {
       buttons.push({
         ...MOD_BTN,
         draw: (ctx, hit) => drawWideButton(ctx, MOD_BTN, hit, "Mod menu", true),
-        onPress: () => this.ctxMgr.goTo(new ModScene(this.ctxMgr)),
+        onPress: () => this.openModMenu(),
       });
     }
 
@@ -94,6 +94,20 @@ export class MenuScene implements Scene {
       return;
     }
     this.ctxMgr.goTo(new PlayScene(this.ctxMgr));
+  }
+
+  private openModMenu(): void {
+    if (this.ctxMgr.mods.unlocked) {
+      this.ctxMgr.goTo(new ModScene(this.ctxMgr));
+      return;
+    }
+    const code = window.prompt("Enter passcode:") ?? "";
+    if (code === "") return;
+    if (this.ctxMgr.mods.tryUnlock(code)) {
+      this.ctxMgr.goTo(new ModScene(this.ctxMgr));
+    } else {
+      window.alert("Incorrect passcode.");
+    }
   }
 
   update(dt: number): void {
