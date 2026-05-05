@@ -25,16 +25,27 @@ export class LeaderboardScene implements Scene {
   ) {}
 
   enter(): void {
+    const backX = 8;
+    const backY = 8;
+    const backW = 44;
+    const backH = 40;
     this.ctxMgr.buttons.set([
       {
-        x: 8,
-        y: 8,
-        w: 28,
-        h: 28,
+        x: backX,
+        y: backY,
+        w: backW,
+        h: backH,
         draw: (ctx, hit) =>
           drawIconButton(
             ctx,
-            { x: 8, y: 8, w: 28, h: 28, draw: () => undefined, onPress: () => undefined },
+            {
+              x: backX,
+              y: backY,
+              w: backW,
+              h: backH,
+              draw: () => undefined,
+              onPress: () => undefined,
+            },
             hit,
             drawBackIcon,
           ),
@@ -68,7 +79,8 @@ export class LeaderboardScene implements Scene {
   }
 
   onFlap(): void {
-    this.ctxMgr.goTo(new MenuScene(this.ctxMgr));
+    // Intentionally a no-op — tapping the list shouldn't exit the scene
+    // (it would break touch-drag scrolling). Use the back button instead.
   }
 
   update(_dt: number): void {
@@ -197,8 +209,8 @@ export class LeaderboardScene implements Scene {
     ctx.textAlign = "center";
     ctx.font = "12px system-ui, sans-serif";
     const hint = this.maxScroll > 0
-      ? "scroll to see more · tap back to return"
-      : "tap or press space to return";
+      ? "drag to scroll · press back button to return"
+      : "press back button to return";
     ctx.fillText(hint, VIRTUAL_WIDTH / 2, VIRTUAL_HEIGHT - 20);
   }
 }
